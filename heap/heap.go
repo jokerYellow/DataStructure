@@ -107,53 +107,6 @@ func (h *Heap) down(index int) {
 		return
 	}
 	h.heapify(index)
-	return
-	for {
-		switch h.heapType {
-		case minHeap:
-			if h.whetherIndexIsBiggerOrEqual(h.items[index], h.items[parentIndex(index)]) == false {
-				return
-			}
-			lIndex := leftIndex(index)
-			rIndex := rightIndex(index)
-			if lIndex > h.heapSize {
-				return
-			}
-			largestIndex := index
-			if h.whetherIndexIsBiggerOrEqual(h.items[index], h.items[lIndex]) {
-				largestIndex = lIndex
-			}
-			if rIndex <= h.heapSize {
-				if h.whetherIndexIsBiggerOrEqual(h.items[largestIndex], h.items[rIndex]) {
-					largestIndex = rIndex
-				}
-			}
-			h.swap(largestIndex, index)
-			index = largestIndex
-			break
-		case maxHeap:
-			if h.whetherIndexIsBiggerOrEqual(h.items[index], h.items[parentIndex(index)]) {
-				return
-			}
-			lIndex := leftIndex(index)
-			rIndex := rightIndex(index)
-			if lIndex > h.heapSize {
-				return
-			}
-			maxIndex := index
-			if h.whetherIndexIsBiggerOrEqual(h.items[index], h.items[lIndex]) {
-				maxIndex = lIndex
-			}
-			if rIndex <= h.heapSize {
-				if h.whetherIndexIsBiggerOrEqual(h.items[maxIndex], h.items[rIndex]) {
-					maxIndex = rIndex
-				}
-			}
-			h.swap(maxIndex, index)
-			index = maxIndex
-			break
-		}
-	}
 }
 
 func (h *Heap) popTop() interface{} {
@@ -207,15 +160,17 @@ func (h *Heap) check() bool {
 	for i, v := range h.items {
 		lIndex := leftIndex(i)
 		rIndex := rightIndex(i)
-		expectValue := false
-		//TODO:expectValue is wrong
 		if lIndex < h.heapSize {
-			if h.whetherIndexIsBiggerOrEqual(h.items[lIndex], v) == expectValue {
+			if h.heapType == maxHeap && h.whetherIndexIsBiggerOrEqual(h.items[lIndex], v) == false {
+				return false
+			} else if h.heapType == minHeap && h.whetherIndexIsBiggerOrEqual(v, h.items[lIndex]) == false {
 				return false
 			}
 		}
 		if rIndex < h.heapSize {
-			if h.whetherIndexIsBiggerOrEqual(h.items[rIndex], v) == expectValue {
+			if h.heapType == maxHeap && h.whetherIndexIsBiggerOrEqual(h.items[rIndex], v) == false {
+				return false
+			} else if h.heapType == minHeap && h.whetherIndexIsBiggerOrEqual(v, h.items[rIndex]) == false {
 				return false
 			}
 		}
