@@ -40,10 +40,8 @@ func TestMaxHeapify(t *testing.T) {
 	h.items = []interface{}{1, 2, 3, 4}
 	h.heapSize = len(h.items)
 	//this is a maxHeap
-	h.whetherIndexIsBiggerOrEqual = func(other, index interface{}) bool {
-		itemValue := other.(int)
-		indexValue := index.(int)
-		return indexValue >= itemValue
+	h.whetherIndexIsBiggerOrEqual = func(other, root interface{}) bool {
+		return root.(int) >= other.(int)
 	}
 	h.print()
 	h.heapify(0)
@@ -60,10 +58,8 @@ func TestMinHeapify(t *testing.T) {
 	h.items = []interface{}{7, 6, 5, 4}
 	h.heapSize = len(h.items)
 	//this is a maxHeap
-	h.whetherIndexIsBiggerOrEqual = func(other, index interface{}) bool {
-		itemValue := other.(int)
-		indexValue := index.(int)
-		return indexValue <= itemValue
+	h.whetherIndexIsBiggerOrEqual = func(other, root interface{}) bool {
+		return root.(int) >= other.(int)
 	}
 	h.print()
 	h.heapify(0)
@@ -75,9 +71,48 @@ func TestMinHeapify(t *testing.T) {
 	}
 }
 
+func TestResetValueMaxHeap(t *testing.T) {
+	h := NewHeap([]interface{}{1, 2, 3, 4, 5, 4, 3, 2, 1}, func(other, root interface{}) bool {
+		return root.(int) >= other.(int)
+	})
+	h.heapType = maxHeap
+	h.print()
+	h.ResetIndex(2, 100)
+	h.print()
+	if h.check() == false {
+		t.Fail()
+	}
+	h.print()
+	h.ResetIndex(0, 1)
+	h.print()
+	if h.check() == false {
+		t.Fail()
+	}
+}
+
+func TestResetValueMinHeap(t *testing.T) {
+	h := NewHeap([]interface{}{1, 2, 3, 4, 5, 4, 3, 2, 1}, func(other, root interface{}) bool {
+		return root.(int) >= other.(int)
+	})
+	h.heapType = minHeap
+	h.buildHeap()
+	h.print()
+	h.ResetIndex(2, 100)
+	h.print()
+	if h.check() == false {
+		t.Fail()
+	}
+	h.print()
+	h.ResetIndex(0, 1)
+	h.print()
+	if h.check() == false {
+		t.Fail()
+	}
+}
+
 func TestPop(t *testing.T) {
 	h := NewHeap([]interface{}{1, 2, 3, 4, 5, 4, 3, 2, 1}, func(other, root interface{}) bool {
-		return root.(int) > other.(int)
+		return root.(int) >= other.(int)
 	})
 	h.print()
 	top := h.popTop()

@@ -5,7 +5,15 @@ import (
 	"math"
 )
 
+type HeapType int
+
+const (
+	minHeap = HeapType(1)
+	maxHeap = HeapType(2)
+)
+
 type Heap struct {
+	heapType                    HeapType
 	items                       []interface{}
 	heapSize                    int
 	whetherIndexIsBiggerOrEqual func(other, root interface{}) bool
@@ -39,6 +47,115 @@ func (h *Heap) top() interface{} {
 	return h.items[0]
 }
 
+func (h *Heap) ResetIndex(index int, value interface{}) {
+	if index >= h.heapSize {
+		return
+	}
+	origin := h.items[index]
+	h.items[index] = value
+
+	originIsBigger := h.whetherIndexIsBiggerOrEqual(value, origin)
+	switch h.heapType {
+	case minHeap:
+		if originIsBigger {
+			h.up(index)
+		} else {
+			h.down(index)
+		}
+		break
+	case maxHeap:
+		if originIsBigger {
+			h.down(index)
+		} else {
+			h.up(index)
+		}
+		break
+	}
+}
+
+func (h *Heap) up(index int) {
+	if index > h.heapSize {
+		return
+	}
+	for index > 0 {
+		switch h.heapType {
+		case minHeap:
+			if h.whetherIndexIsBiggerOrEqual(h.items[index], h.items[parentIndex(index)]) == false {
+				return
+			}
+			break
+		case maxHeap:
+			if h.whetherIndexIsBiggerOrEqual(h.items[index], h.items[parentIndex(index)]) {
+				return
+			}
+			break
+		}
+		h.swap(parentIndex(index), index)
+		index = parentIndex(index)
+	}
+}
+
+func (h *Heap) swap(i, j int) {
+	if i >= h.heapSize || j >= h.heapSize {
+		return
+	}
+	h.items[j], h.items[i] = h.items[i], h.items[j]
+}
+
+func (h *Heap) down(index int) {
+	if index > h.heapSize {
+		return
+	}
+	h.heapify(index)
+	return
+	for {
+		switch h.heapType {
+		case minHeap:
+			if h.whetherIndexIsBiggerOrEqual(h.items[index], h.items[parentIndex(index)]) == false {
+				return
+			}
+			lIndex := leftIndex(index)
+			rIndex := rightIndex(index)
+			if lIndex > h.heapSize {
+				return
+			}
+			largestIndex := index
+			if h.whetherIndexIsBiggerOrEqual(h.items[index], h.items[lIndex]) {
+				largestIndex = lIndex
+			}
+			if rIndex <= h.heapSize {
+				if h.whetherIndexIsBiggerOrEqual(h.items[largestIndex], h.items[rIndex]) {
+					largestIndex = rIndex
+				}
+			}
+			h.swap(largestIndex, index)
+			index = largestIndex
+			break
+		case maxHeap:
+			if h.whetherIndexIsBiggerOrEqual(h.items[index], h.items[parentIndex(index)]) {
+				return
+			}
+			lIndex := leftIndex(index)
+			rIndex := rightIndex(index)
+			if lIndex > h.heapSize {
+				return
+			}
+			maxIndex := index
+			if h.whetherIndexIsBiggerOrEqual(h.items[index], h.items[lIndex]) {
+				maxIndex = lIndex
+			}
+			if rIndex <= h.heapSize {
+				if h.whetherIndexIsBiggerOrEqual(h.items[maxIndex], h.items[rIndex]) {
+					maxIndex = rIndex
+				}
+			}
+			h.swap(maxIndex, index)
+			index = maxIndex
+			break
+		}
+	}
+}
+
 func (h *Heap) popTop() interface{} {
 	if len(h.items) == 0 {
 		return nil
@@ -61,12 +178,16 @@ func (h *Heap) heapify(index int) {
 	if lIndex >= h.heapSize {
 		return
 	}
+	expectResult := false
+	if h.heapType == minHeap {
+		expectResult = true
+	}
 	largestIndex := index
-	if h.whetherIndexIsBiggerOrEqual(h.items[lIndex], cItem) == false {
+	if h.whetherIndexIsBiggerOrEqual(h.items[lIndex], cItem) == expectResult {
 		largestIndex = lIndex
 	}
 	if rIndex < h.heapSize &&
-		h.whetherIndexIsBiggerOrEqual(h.items[rIndex], h.items[largestIndex]) == false {
+		h.whetherIndexIsBiggerOrEqual(h.items[rIndex], h.items[largestIndex]) == expectResult {
 		largestIndex = rIndex
 	}
 	if largestIndex != index {
@@ -86,13 +207,15 @@ func (h *Heap) check() bool {
 	for i, v := range h.items {
 		lIndex := leftIndex(i)
 		rIndex := rightIndex(i)
+		expectValue := false
+		//TODO:expectValue is wrong
 		if lIndex < h.heapSize {
-			if h.whetherIndexIsBiggerOrEqual(h.items[lIndex], v) == false {
+			if h.whetherIndexIsBiggerOrEqual(h.items[lIndex], v) == expectValue {
 				return false
 			}
 		}
 		if rIndex < h.heapSize {
-			if h.whetherIndexIsBiggerOrEqual(h.items[rIndex], v) == false {
+			if h.whetherIndexIsBiggerOrEqual(h.items[rIndex], v) == expectValue {
 				return false
 			}
 		}
