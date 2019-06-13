@@ -5,44 +5,48 @@ import (
 	"math"
 )
 
-type HeapType int
-
-const (
-	minHeap = HeapType(1)
-	maxHeap = HeapType(2)
-)
-
-type Heap struct {
-	heapType      HeapType
-	items         []interface{}
-	heapSize      int
-	BiggerOrEqual func(smaller, bigger interface{}) bool
+type Heaper interface {
+	Top() interface{}
+	ResetIndex(index int, value interface{})
+	PopTop() interface{}
+	ValidCheck() bool
+	Print()
 }
 
-func leftIndex(i int) int {
+type Heap struct {
+	items    []interface{}
+	heapSize int
+	compare  Compare
+}
+
+func left(i int) int {
 	return 2*i + 1
 }
 
-func rightIndex(i int) int {
+func right(i int) int {
 	return 2*i + 2
 }
 
-func parentIndex(i int) int {
+func parent(i int) int {
 	return (i - 1) / 2
 }
 
 type Compare func(lower, topper interface{}) bool
 
-func NewHeap(items []interface{}, compare Compare) *Heap {
-	h := &Heap{}
+func NewHeap(items []interface{}, compare Compare) Heaper {
+	return newHeap(items, compare)
+}
+
+func newHeap(items []interface{}, compare Compare) *Heap {
+	h := new(Heap)
 	h.items = items
-	h.BiggerOrEqual = compare
+	h.compare = compare
 	h.heapSize = len(h.items)
-	(*Heap)(h).buildHeap()
+	h.buildHeap()
 	return h
 }
 
-func (h *Heap) top() interface{} {
+func (h *Heap) Top() interface{} {
 	if len(h.items) == 0 {
 		return nil
 	}
@@ -54,24 +58,20 @@ func (h *Heap) ResetIndex(index int, value interface{}) {
 		return
 	}
 	origin := h.items[index]
-	h.items[index] = value
 
-	originIsBigger := h.BiggerOrEqual(value, origin)
-	switch h.heapType {
-	case minHeap:
-		if originIsBigger {
-			h.up(index)
-		} else {
-			h.down(index)
-		}
-		break
-	case maxHeap:
-		if originIsBigger {
-			h.down(index)
-		} else {
-			h.up(index)
-		}
-		break
+	//judge is minHeap or maxHeap
+	//if heapSize is 0 or 1,either min or max is ok.
+
+	flag := true
+	if h.heapSize >= 2 {
+		flag = h.compare(h.items[1], h.items[0])
+		return
+	}
+	h.items[index] = value
+	if h.compare(value, origin) != flag {
+		h.up(index)
+	} else {
+		h.down(index)
 	}
 }
 
@@ -80,20 +80,11 @@ func (h *Heap) up(index int) {
 		return
 	}
 	for index > 0 {
-		switch h.heapType {
-		case minHeap:
-			if h.BiggerOrEqual(h.items[index], h.items[parentIndex(index)]) == false {
-				return
-			}
-			break
-		case maxHeap:
-			if h.BiggerOrEqual(h.items[index], h.items[parentIndex(index)]) {
-				return
-			}
-			break
+		if h.compare(h.items[index], h.items[parent(index)]) {
+			return
 		}
-		h.swap(parentIndex(index), index)
-		index = parentIndex(index)
+		h.swap(parent(index), index)
+		index = parent(index)
 	}
 }
 
@@ -111,7 +102,7 @@ func (h *Heap) down(index int) {
 	h.heapify(index)
 }
 
-func (h *Heap) popTop() interface{} {
+func (h *Heap) PopTop() interface{} {
 	if len(h.items) == 0 {
 		return nil
 	}
@@ -128,21 +119,17 @@ func (h *Heap) heapify(index int) {
 		return
 	}
 	cItem := h.items[index]
-	lIndex := leftIndex(index)
-	rIndex := rightIndex(index)
+	lIndex := left(index)
+	rIndex := right(index)
 	if lIndex >= h.heapSize {
 		return
 	}
-	expectResult := false
-	if h.heapType == minHeap {
-		expectResult = true
-	}
 	largestIndex := index
-	if h.BiggerOrEqual(h.items[lIndex], cItem) == expectResult {
+	if h.compare(h.items[lIndex], cItem) == false {
 		largestIndex = lIndex
 	}
 	if rIndex < h.heapSize &&
-		h.BiggerOrEqual(h.items[rIndex], h.items[largestIndex]) == expectResult {
+		h.compare(h.items[rIndex], h.items[largestIndex]) == false {
 		largestIndex = rIndex
 	}
 	if largestIndex != index {
@@ -158,21 +145,17 @@ func (h *Heap) buildHeap() {
 	}
 }
 
-func (h *Heap) check() bool {
+func (h *Heap) ValidCheck() bool {
 	for i, v := range h.items {
-		lIndex := leftIndex(i)
-		rIndex := rightIndex(i)
+		lIndex := left(i)
+		rIndex := right(i)
 		if lIndex < h.heapSize {
-			if h.heapType == maxHeap && h.BiggerOrEqual(h.items[lIndex], v) == false {
-				return false
-			} else if h.heapType == minHeap && h.BiggerOrEqual(v, h.items[lIndex]) == false {
+			if h.compare(h.items[lIndex], v) == false {
 				return false
 			}
 		}
 		if rIndex < h.heapSize {
-			if h.heapType == maxHeap && h.BiggerOrEqual(h.items[rIndex], v) == false {
-				return false
-			} else if h.heapType == minHeap && h.BiggerOrEqual(v, h.items[rIndex]) == false {
+			if h.compare(h.items[rIndex], v) == false {
 				return false
 			}
 		}
@@ -180,7 +163,7 @@ func (h *Heap) check() bool {
 	return true
 }
 
-func (h *Heap) print() {
+func (h *Heap) Print() {
 	bounds := 2
 
 	rows := int(math.Ceil(math.Log2(float64(h.heapSize)))) - 1
