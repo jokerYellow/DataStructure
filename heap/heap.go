@@ -31,13 +31,14 @@ func parentIndex(i int) int {
 	return (i - 1) / 2
 }
 
-func NewHeap(heapType HeapType, items []interface{}, BiggerOrEqual func(smaller, bigger interface{}) bool) Heap {
-	h := Heap{}
-	h.heapType = heapType
+type Compare func(lower, topper interface{}) bool
+
+func NewHeap(items []interface{}, compare Compare) *Heap {
+	h := &Heap{}
 	h.items = items
-	h.heapSize = len(items)
-	h.BiggerOrEqual = BiggerOrEqual
-	h.buildHeap()
+	h.BiggerOrEqual = compare
+	h.heapSize = len(h.items)
+	(*Heap)(h).buildHeap()
 	return h
 }
 

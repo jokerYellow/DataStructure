@@ -36,8 +36,8 @@ func expect(a, b int, t *testing.T) {
 }
 
 func TestMaxHeapify(t *testing.T) {
-	h := NewHeap(maxHeap, []interface{}{1, 2, 3, 4}, func(smaller, bigger interface{}) bool {
-		return bigger.(int) >= smaller.(int)
+	h := NewHeap([]interface{}{1, 2, 3, 4}, func(lower, topper interface{}) bool {
+		return topper.(int) >= lower.(int)
 	})
 	h.print()
 	h.heapify(0)
@@ -50,8 +50,8 @@ func TestMaxHeapify(t *testing.T) {
 }
 
 func TestMinHeapify(t *testing.T) {
-	h := NewHeap(maxHeap, []interface{}{7, 6, 5, 4}, func(smaller, bigger interface{}) bool {
-		return bigger.(int) >= smaller.(int)
+	h := NewHeap([]interface{}{7, 6, 5, 4}, func(lower, topper interface{}) bool {
+		return topper.(int) >= lower.(int)
 	})
 	h.print()
 	h.heapify(0)
@@ -64,8 +64,8 @@ func TestMinHeapify(t *testing.T) {
 }
 
 func TestResetValueMaxHeap(t *testing.T) {
-	h := NewHeap(maxHeap, []interface{}{1, 2, 3, 4, 5, 4, 3, 2, 1}, func(smaller, bigger interface{}) bool {
-		return bigger.(int) >= smaller.(int)
+	h := NewHeap([]interface{}{1, 2, 3, 4, 5, 4, 3, 2, 1}, func(lower, topper interface{}) bool {
+		return topper.(int) >= lower.(int)
 	})
 	h.print()
 	h.ResetIndex(2, 100)
@@ -82,8 +82,8 @@ func TestResetValueMaxHeap(t *testing.T) {
 }
 
 func TestResetValueMinHeap(t *testing.T) {
-	h := NewHeap(minHeap, []interface{}{1, 20, 3, 4, 5, 4, 3, 2, 1}, func(smaller, bigger interface{}) bool {
-		return bigger.(int) >= smaller.(int)
+	h := NewHeap([]interface{}{1, 20, 3, 4, 5, 4, 3, 2, 1}, func(lower, topper interface{}) bool {
+		return topper.(int) >= lower.(int)
 	})
 	h.buildHeap()
 	h.print()
@@ -101,8 +101,8 @@ func TestResetValueMinHeap(t *testing.T) {
 }
 
 func TestPop(t *testing.T) {
-	h := NewHeap(maxHeap, []interface{}{1, 2, 3, 4, 5, 4, 3, 2, 1}, func(smaller, bigger interface{}) bool {
-		return bigger.(int) >= smaller.(int)
+	h := NewHeap([]interface{}{1, 2, 3, 4, 5, 4, 3, 2, 1}, func(lower, topper interface{}) bool {
+		return lower.(int) >= topper.(int)
 	})
 	h.print()
 	top := h.popTop()
